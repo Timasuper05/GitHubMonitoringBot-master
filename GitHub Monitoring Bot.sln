@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHub Monitoring Bot", "GitHub Monitoring Bot.csproj", "{B6EB748C-DCBD-424B-BD31-4AC0BEE89456}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubMonitoringBot.Tests", "tests\GitHubMonitoringBot.Tests\GitHubMonitoringBot.Tests.csproj", "{6F25D32A-00A6-4F29-BBB3-B1196B3DF091}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6EB748C-DCBD-424B-BD31-4AC0BEE89456}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6EB748C-DCBD-424B-BD31-4AC0BEE89456}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6EB748C-DCBD-424B-BD31-4AC0BEE89456}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6EB748C-DCBD-424B-BD31-4AC0BEE89456}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F25D32A-00A6-4F29-BBB3-B1196B3DF091}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F25D32A-00A6-4F29-BBB3-B1196B3DF091}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F25D32A-00A6-4F29-BBB3-B1196B3DF091}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F25D32A-00A6-4F29-BBB3-B1196B3DF091}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
