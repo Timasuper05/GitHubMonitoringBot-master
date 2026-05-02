@@ -67,24 +67,16 @@ public class GitHubPullRequestService(
 
             if (string.IsNullOrWhiteSpace(trackedRepo.Owner))
             {
-                var repositories = await FindRepositoriesByNameAsync(trackedRepo.RepoName, cancellationToken);
-                trackedRepositories.AddRange(repositories);
-
+                logger.LogWarning(
+                    "Repository config item {RepositoryName} was skipped because Owner is empty",
+                    trackedRepo.RepoName);
                 continue;
             }
 
-            try
+            var repo = await GetConfiguredRepositoryAsync(trackedRepo, cancellationToken);
+            if (repo != null)
             {
-                var repo = await gitClient.Repository.Get(trackedRepo.Owner, trackedRepo.RepoName);
                 trackedRepositories.Add(repo);
-                logger.LogInformation("GitHub found configured repository {Owner}/{RepositoryName}", repo.Owner.Login, repo.Name);
-            }
-            catch (NotFoundException)
-            {
-                logger.LogWarning(
-                    "GitHub repository {Owner}/{RepositoryName} was not found or token has no access",
-                    trackedRepo.Owner,
-                    trackedRepo.RepoName);
             }
         }
 
@@ -93,33 +85,49 @@ public class GitHubPullRequestService(
             .ToList();
     }
 
-    private async Task<List<Repository>> FindRepositoriesByNameAsync(
-        string repositoryName,
+    private async Task<Repository?> GetConfiguredRepositoryAsync(
+        RepositoryConfig trackedRepo,
         CancellationToken cancellationToken)
     {
-        logger.LogInformation("Owner is not configured for {RepositoryName}; searching accessible repositories by name", repositoryName);
+        try
+        {
+            logger.LogInformation(
+                "Getting configured repository {Owner}/{RepositoryName}",
+                trackedRepo.Owner,
+                trackedRepo.RepoName);
 
-        var repositories = await gitClient.Repository.GetAllForCurrent();
-        cancellationToken.ThrowIfCancellationRequested();
+            var repo = await gitClient.Repository.Get(trackedRepo.Owner, trackedRepo.RepoName);
+            cancellationToken.ThrowIfCancellationRequested();
 
-        var matchedRepositories = repositories
-            .Where(x => string.Equals(x.Name, repositoryName, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+            if (!IsConfiguredRepository(repo, trackedRepo))
+            {
+                logger.LogWarning(
+                    "GitHub returned repository {ActualOwner}/{ActualRepositoryName}, but config expects {ExpectedOwner}/{ExpectedRepositoryName}",
+                    repo.Owner.Login,
+                    repo.Name,
+                    trackedRepo.Owner,
+                    trackedRepo.RepoName);
 
-        if (matchedRepositories.Count == 0)
+                return null;
+            }
+
+            logger.LogInformation("GitHub found configured repository {Owner}/{RepositoryName}", repo.Owner.Login, repo.Name);
+            return repo;
+        }
+        catch (NotFoundException)
         {
             logger.LogWarning(
-                "GitHub did not find accessible repositories with name {RepositoryName}. Configure Owner if this is an organization repository",
-                repositoryName);
+                "GitHub repository {Owner}/{RepositoryName} was not found or token has no access",
+                trackedRepo.Owner,
+                trackedRepo.RepoName);
 
-            return [];
+            return null;
         }
+    }
 
-        foreach (var repository in matchedRepositories)
-        {
-            logger.LogInformation("GitHub found configured repository {Owner}/{RepositoryName}", repository.Owner.Login, repository.Name);
-        }
-
-        return matchedRepositories;
+    private static bool IsConfiguredRepository(Repository repo, RepositoryConfig trackedRepo)
+    {
+        return string.Equals(repo.Name, trackedRepo.RepoName, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(repo.Owner.Login, trackedRepo.Owner, StringComparison.OrdinalIgnoreCase);
     }
 }
